@@ -1,21 +1,22 @@
-import {useState} from "react";
+
+import { useChat } from "../hooks/useChat";
 import Chatbar from "../components/Chatbar";
 import Chats from "../components/Chats";
 import History from "../layout/History";
 
 function Chat() {
-  const [message, setMessage]=useState('');
+
+  const { messages, loading, sendMessage } = useChat();
   return (
-    <div className="flex h-full">
+   
+    <div className="flex h-full rounded-xl overflow-hidden border border-gray-700">
+
      
       <div className="flex flex-col flex-1 overflow-hidden">
         <div className="flex-1 overflow-auto">
-          <Chats />
+          <Chats messages={messages} loading={loading} />
         </div>
-        <Chatbar 
-        message={message}
-        setMessage={setMessage}
-        />
+        <Chatbar onSend={sendMessage} />
       </div>
 
       
