@@ -4,6 +4,8 @@ import Sidebar from "./layout/Sidebar";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import FAQ from "./pages/Faq";
+import Login from "./pages/Login"
+import Signup from "./pages/Signup"
 
 function App() {
   return (
@@ -36,6 +38,11 @@ function App() {
               </div>
             }
           />
+
+
+           <Route path="/login" element={<Login />} />
+    <Route path="/signup" element={<Signup />} />
+   
         </Routes>
       </main>
     </div>
