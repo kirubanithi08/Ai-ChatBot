@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 
-function Chatbar({ onSend }) {
+function Chatbar({ onSend, disabled }) {
   const textareaRef = useRef(null);
 
   const autoResize = () => {
@@ -20,7 +20,7 @@ function Chatbar({ onSend }) {
 
   const handleSend = () => {
     const value = textareaRef.current.value.trim();
-    if (!value) return;
+    if (!value || disabled) return;
 
     onSend?.(value);
     textareaRef.current.value = "";
@@ -28,26 +28,29 @@ function Chatbar({ onSend }) {
   };
 
   return (
-    <div className="sticky bottom-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent p-4">
-      <div className="mx-auto flex max-w-3xl items-end gap-3 rounded-2xl bg-gray-800 px-4 py-3 shadow-lg">
+    <div className="relative">
+      <div className="flex items-end gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
+
+       
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder="Message AiChatBot..."
+          placeholder="Message AI Assistant..."
           onInput={autoResize}
           onKeyDown={handleKeyDown}
-          className="max-h-40 flex-1 resize-none bg-transparent text-white
-                     placeholder-gray-400 outline-none"
+          disabled={disabled}
+          className="max-h-40 flex-1 resize-none bg-transparent text-gray-800 placeholder-gray-400 outline-none"
         />
 
+       
         <button
           onClick={handleSend}
-          className="flex h-10 w-10 items-center justify-center rounded-full
-                     bg-indigo-600 text-white transition hover:bg-indigo-500
-                     disabled:opacity-50"
+          disabled={disabled}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           <i className="fa-solid fa-arrow-up" />
         </button>
+
       </div>
     </div>
   );

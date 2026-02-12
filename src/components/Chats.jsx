@@ -3,6 +3,7 @@ import Message from "./Message";
 function Chats({ messages, loading }) {
   return (
     <div className="flex flex-col gap-3 p-4">
+      
       {messages.map((msg) => (
         <Message
           key={msg.id}
@@ -14,6 +15,7 @@ function Chats({ messages, loading }) {
       {loading && (
         <Message role="assistant" content="Typing..." />
       )}
+
     </div>
   );
 }
