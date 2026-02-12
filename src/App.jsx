@@ -4,47 +4,27 @@ import Sidebar from "./layout/Sidebar";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import FAQ from "./pages/Faq";
-import Login from "./pages/Login"
-import Signup from "./pages/Signup"
 
 function App() {
   return (
-    <div className="flex h-screen bg-black overflow-hidden">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
+      
       <Sidebar />
 
-      <main className="flex-1 p-4 ">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <div className="h-full bg-gray-800 text-white rounded-lg">
-                <Chat />
-              </div>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <div className="h-full bg-gray-800 text-white rounded-lg">
-                <Settings />
-              </div>
-            }
-          />
-          <Route
-            path="/faq"
-            element={
-              <div className="h-full bg-gray-800 text-white rounded-lg">
-                <FAQ />
-              </div>
-            }
-          />
+      <main className="flex-1 p-6 overflow-hidden bg-[#0f0f11]">
+        
+        <div className="h-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          
+          <Routes>
+            <Route path="/" element={<Chat />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/faq" element={<FAQ />} />
+          </Routes>
 
+        </div>
 
-           <Route path="/login" element={<Login />} />
-    <Route path="/signup" element={<Signup />} />
-   
-        </Routes>
       </main>
+
     </div>
   );
 }
