@@ -1,9 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../auth/AuthContext";
-import Modal from "../components/Model";
-import Login from "../pages/Login";
-import Signup from "../pages/Signup";
+import { useAuth } from "../../auth/AuthContext";
+import Modal from "../Model";
+import Login from "../../pages/Login";
+import Signup from "../../pages/Signup";
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -29,7 +29,7 @@ export default function Sidebar() {
 
   return (
     <>
-      
+
       <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#0f0f11] text-white border-b border-white/10">
         <span className="font-semibold tracking-wide">
           Ai<span className="text-indigo-400">Chat</span>
@@ -39,7 +39,7 @@ export default function Sidebar() {
         </button>
       </div>
 
-      
+
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
@@ -47,7 +47,7 @@ export default function Sidebar() {
         />
       )}
 
-      
+
       <aside
         className={`
           fixed md:static z-50
@@ -62,7 +62,7 @@ export default function Sidebar() {
       >
         <div className="flex flex-col h-full">
 
-          
+
           <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
             {!collapsed && (
               <h1 className="text-lg font-semibold tracking-wide">
@@ -75,9 +75,8 @@ export default function Sidebar() {
               className="hidden md:block text-gray-400 hover:text-white transition"
             >
               <i
-                className={`fa-solid ${
-                  collapsed ? "fa-chevron-right" : "fa-chevron-left"
-                }`}
+                className={`fa-solid ${collapsed ? "fa-chevron-right" : "fa-chevron-left"
+                  }`}
               />
             </button>
 
@@ -89,7 +88,7 @@ export default function Sidebar() {
             </button>
           </div>
 
-          
+
           <nav className="px-3 py-4 space-y-1 flex-1">
             <NavLink
               to="/"
@@ -125,11 +124,11 @@ export default function Sidebar() {
             </NavLink>
           </nav>
 
-          
+
           <div className="px-3 py-4 border-t border-white/10 space-y-2">
             {user ? (
               <>
-                
+
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5">
                   <i className="fa-solid fa-user-circle text-xl text-indigo-400" />
                   {!collapsed && (
@@ -144,7 +143,7 @@ export default function Sidebar() {
                   )}
                 </div>
 
-                
+
                 <button
                   onClick={handleLogout}
                   className={`${baseLink} w-full text-red-400 hover:bg-red-500/10`}
@@ -176,7 +175,7 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      
+
       <Modal open={!!authModal} onClose={() => setAuthModal(null)}>
         {authModal === "login" && (
           <Login onSuccess={() => setAuthModal(null)} />
