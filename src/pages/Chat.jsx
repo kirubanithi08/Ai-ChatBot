@@ -1,7 +1,7 @@
 import { useChat } from "../hooks/useChat";
 import Chatbar from "../components/Chatbar";
 import Chats from "../components/Chats";
-import History from "../layout/History";
+import History from "../components/layout/History";
 
 function Chat() {
   const { messages, loading, sendMessage } = useChat();
