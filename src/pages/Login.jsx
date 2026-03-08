@@ -10,7 +10,7 @@ const Login = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const res = await loginUser(form);
-    login(res.data.token);
+    login(res.data.token, res.data.name);
     onSuccess();
   };
 

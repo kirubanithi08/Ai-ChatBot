@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../../auth/AuthContext";
+import { useChatContext } from "../../context/ChatContext";
 import Modal from "../Model";
 import Login from "../../pages/Login";
 import Signup from "../../pages/Signup";
@@ -11,7 +12,10 @@ export default function Sidebar() {
   const [authModal, setAuthModal] = useState(null);
 
   const { user, logout } = useAuth();
+  const { resetChat } = useChatContext();
   const navigate = useNavigate();
+
+  const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
   const baseLink =
     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200";
@@ -95,9 +99,12 @@ export default function Sidebar() {
               className={({ isActive }) =>
                 `${baseLink} ${isActive ? active : inactive}`
               }
-              onClick={() => setMobileOpen(false)}
+              onClick={() => {
+                setMobileOpen(false);
+                resetChat();
+              }}
             >
-              <i className="fa-solid fa-pen-to-square w-5 text-center" />
+              <i className="fa-solid fa-plus w-5 text-center" />
               {!collapsed && <span>New Chat</span>}
             </NavLink>
 
@@ -130,14 +137,18 @@ export default function Sidebar() {
               <>
 
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5">
-                  <i className="fa-solid fa-user-circle text-xl text-indigo-400" />
+
+                  <div className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-500 text-white font-semibold">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                  </div>
+
                   {!collapsed && (
                     <div className="leading-tight">
                       <div className="text-sm font-medium">
-                        {user.name || "User"}
+                        {user?.name || "User"}
                       </div>
                       <div className="text-xs text-gray-400">
-                        {user.email}
+                        {user?.email}
                       </div>
                     </div>
                   )}
