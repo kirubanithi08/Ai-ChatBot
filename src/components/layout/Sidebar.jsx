@@ -108,7 +108,7 @@ export default function Sidebar() {
               {!collapsed && <span>New Chat</span>}
             </NavLink>
 
-            <NavLink
+            {/* <NavLink
               to="/settings"
               className={({ isActive }) =>
                 `${baseLink} ${isActive ? active : inactive}`
@@ -117,7 +117,7 @@ export default function Sidebar() {
             >
               <i className="fa-solid fa-gear w-5 text-center" />
               {!collapsed && <span>Settings</span>}
-            </NavLink>
+            </NavLink> */}
 
             <NavLink
               to="/faq"
