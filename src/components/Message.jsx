@@ -1,42 +1,61 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github-dark.css";
 
 function Message({ role, content }) {
   const isUser = role === "user";
 
-  return (
-    <div className={`w-full flex ${isUser ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+  const CodeBlock = ({ children }) => {
+    const [copied, setCopied] = useState(false);
 
+    const copyCode = () => {
+      navigator.clipboard.writeText(children);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+      <div className="relative my-2">
+        <button
+          onClick={copyCode}
+          className="absolute top-2 right-2 text-xs bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-600"
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
+
+        <pre className="rounded-lg overflow-x-auto p-3 bg-[#0d1117] text-sm">
+          <code>{children}</code>
+        </pre>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className={`w-full flex ${isUser ? "justify-end" : "justify-start"
+        } animate-in fade-in slide-in-from-bottom-2 duration-300`}
+    >
       <div
         className={`
           max-w-[85%] px-5 py-3 shadow-sm transition-all duration-200
           ${isUser
-            ? "bg-gradient-to-tr from-indigo-600 to-violet-500 text-white rounded-[22px] rounded-br-[4px] shadow-indigo-100"
-            : "bg-white border border-gray-100 text-gray-800 rounded-[22px] rounded-bl-[4px] shadow-gray-50"
+            ? "bg-gradient-to-tr from-indigo-600 to-violet-500 text-white rounded-[22px] rounded-br-[4px]"
+            : "bg-white border border-gray-100 text-gray-800 rounded-[22px] rounded-bl-[4px]"
           }
         `}
       >
         <div className="text-[15px] leading-[1.6] font-medium prose prose-sm max-w-none">
           <ReactMarkdown
+            rehypePlugins={[rehypeHighlight]}
             components={{
-              code({ node, inline, className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || "");
-                return !inline && match ? (
-                  <SyntaxHighlighter
-                    style={atomDark}
-                    language={match[1]}
-                    PreTag="div"
-                    className="rounded-lg my-2"
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, "")}
-                  </SyntaxHighlighter>
-                ) : (
-                  <code className={`${className} bg-gray-100 px-1 rounded text-pink-600`} {...props}>
+              code({ inline, children }) {
+                return inline ? (
+                  <code className="bg-gray-100 px-1 rounded text-pink-600">
                     {children}
                   </code>
+                ) : (
+                  <CodeBlock>{String(children)}</CodeBlock>
                 );
               },
               p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
@@ -52,10 +71,8 @@ function Message({ role, content }) {
           </ReactMarkdown>
         </div>
       </div>
-
     </div>
   );
 }
 
 export default Message;
-
