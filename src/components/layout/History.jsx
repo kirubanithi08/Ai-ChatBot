@@ -1,11 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../auth/AuthContext";
 import { useChatContext } from "../../context/ChatContext";
-import { Link } from "react-router-dom";
+import Modal from "../Model";
+import Login from "../../pages/Login";
 
 function History() {
   const { user } = useAuth();
   const { chats, loadChat, fetchChats } = useChatContext();
+
+  const [authModal, setAuthModal] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -33,20 +36,24 @@ function History() {
             <div className="w-14 h-14 bg-white shadow-sm rounded-2xl flex items-center justify-center mb-4 text-gray-300">
               <i className="fa-solid fa-lock text-xl"></i>
             </div>
+
             <p className="text-sm text-gray-500 mb-6 font-medium">
               Sign in to keep your chat history across devices
             </p>
-            <Link
-              to="/login"
+
+            <button
+              onClick={() => setAuthModal("login")}
               className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
             >
               Log In
-            </Link>
+            </button>
           </div>
         ) : chats.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-40">
             <i className="fa-solid fa-ghost text-3xl mb-3 text-gray-300"></i>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">No history yet</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">
+              No history yet
+            </p>
           </div>
         ) : (
           chats.map((chat) => (
@@ -61,9 +68,15 @@ function History() {
           ))
         )}
       </div>
+
+      
+      <Modal open={!!authModal} onClose={() => setAuthModal(null)}>
+        {authModal === "login" && (
+          <Login onSuccess={() => setAuthModal(null)} />
+        )}
+      </Modal>
     </div>
   );
 }
 
 export default History;
-
