@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import api from "../api/axios";
-import { getUserChats, getUserChatsById } from "../api/chat";
+import { getUserChats, getUserChatsById } from "../api/chatApi";
 
 const ChatContext = createContext();
 
