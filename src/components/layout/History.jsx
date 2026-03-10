@@ -60,16 +60,16 @@ function History() {
             <button
               key={chat.id}
               onClick={() => loadChat(chat.id)}
-              className="w-full text-left px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all flex items-center gap-2 group"
+              className="w-full text-left px-3 py-2.5 rounded-xl text-sm text-gray-700 bg-white border border-gray-100 shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all flex items-center gap-2 group mb-2"
             >
               <i className="fa-regular fa-message text-gray-400 group-hover:text-indigo-500 transition-colors"></i>
-              <span className="truncate">{chat.title || "New Chat"}</span>
+              <span className="truncate font-medium">{chat.title || "New Chat"}</span>
             </button>
           ))
         )}
       </div>
 
-      
+
       <Modal open={!!authModal} onClose={() => setAuthModal(null)}>
         {authModal === "login" && (
           <Login onSuccess={() => setAuthModal(null)} />

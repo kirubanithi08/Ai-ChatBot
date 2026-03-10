@@ -29,29 +29,29 @@ function Chatbar({ onSend, disabled }) {
 
   return (
     <div className="relative">
-      <div className="flex items-end gap-3 rounded-2xl border border-gray-200 bg-white p-2 pl-4 shadow-lg shadow-indigo-500/5 transition-all duration-300 focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-100/50">
+      <div className="flex items-end gap-3 rounded-2xl border border-gray-200 bg-white p-2.5 pr-3 shadow-md transition-all duration-300 focus-within:border-gray-300">
 
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder="Message AI Assistant..."
+          placeholder="Ask..."
           onInput={autoResize}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          className="max-h-40 flex-1 resize-none bg-transparent py-2 text-[15px] text-gray-800 placeholder-gray-400 outline-none"
+          className="max-h-52 flex-1 resize-none bg-transparent py-2.5 px-3 text-[15px] text-gray-800 placeholder-gray-500 outline-none"
         />
 
         <button
           onClick={handleSend}
           disabled={disabled}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition-all duration-200 hover:bg-indigo-700 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2f2f2f] text-white transition-all duration-200 hover:bg-[#1a1a1a] active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-300"
         >
-          <i className="fa-solid fa-arrow-up" />
+          <i className="fa-solid fa-arrow-up text-lg" />
         </button>
 
       </div>
-      <p className="mt-2 text-center text-[11px] text-gray-400">
-        AI may produce inaccurate info. Check important details.
+      <p className="mt-3 text-center text-[12px] text-gray-500">
+        ChatGPT can make mistakes. Check important info.
       </p>
     </div>
   );
