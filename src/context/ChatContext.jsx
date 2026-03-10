@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import api from "../api/axios";
 import { getUserChats, getUserChatsById } from "../api/chatApi";
 
@@ -10,6 +10,8 @@ export function ChatProvider({ children }) {
     const [sessionId, setSessionId] = useState(null);
     const [chats, setChats] = useState([]);
 
+    
+
     const fetchChats = useCallback(async () => {
         try {
             const data = await getUserChats();
@@ -19,13 +21,16 @@ export function ChatProvider({ children }) {
         }
     }, []);
 
+   
+
     const sendMessage = async (text) => {
         if (!text.trim()) return;
 
         const userMsg = {
             id: crypto.randomUUID(),
-            role: "user",
+            sender: "USER",
             content: text,
+            createdAt: new Date().toISOString(),
         };
 
         setMessages((prev) => [...prev, userMsg]);
@@ -33,6 +38,7 @@ export function ChatProvider({ children }) {
 
         try {
             const isNewSession = !sessionId;
+
             const res = await api.post("/chat", {
                 message: text,
                 sessionId,
@@ -46,50 +52,66 @@ export function ChatProvider({ children }) {
 
             const aiMsg = {
                 id: crypto.randomUUID(),
-                role: "assistant",
-                content: data.aiResponse ?? "No response received.",
+                sender: "AI",
+                content:
+                    typeof data.aiResponse === "string"
+                        ? data.aiResponse
+                        : JSON.stringify(data.aiResponse, null, 2),
+                createdAt: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, aiMsg]);
 
-            // If it was a new session, refresh the chat list to show the new conversation
             if (isNewSession) {
                 fetchChats();
             }
+
         } catch (error) {
             console.error("Chat Error:", error);
+
             setMessages((prev) => [
                 ...prev,
                 {
                     id: crypto.randomUUID(),
-                    role: "assistant",
+                    sender: "AI",
                     content: "⚠️ Failed to get response. Please try again.",
+                    createdAt: new Date().toISOString(),
                 },
             ]);
+
         } finally {
             setLoading(false);
         }
     };
+
+    
 
     const resetChat = () => {
         setMessages([]);
         setSessionId(null);
     };
 
+    
+
     const loadChat = useCallback(async (id) => {
         try {
             setLoading(true);
             setSessionId(id);
+
             const history = await getUserChatsById(id);
 
-            // Map API response to our message format if needed
-            const mappedMessages = history.map(msg => ({
+            const mappedMessages = history.map((msg) => ({
                 id: msg.id || crypto.randomUUID(),
-                role: msg.role === 'user' ? 'user' : 'assistant',
-                content: msg.message || msg.content
+                sender: msg.sender || (msg.role === "user" ? "USER" : "AI"),
+                content:
+                    typeof (msg.message || msg.content) === "string"
+                        ? (msg.message || msg.content)
+                        : JSON.stringify(msg.message || msg.content, null, 2),
+                createdAt: msg.createdAt || new Date().toISOString(),
             }));
 
             setMessages(mappedMessages);
+
         } catch (error) {
             console.error("Failed to load chat history:", error);
         } finally {
@@ -116,11 +138,13 @@ export function ChatProvider({ children }) {
 }
 
 
+
 export const useChatContext = () => {
     const context = useContext(ChatContext);
+
     if (!context) {
         throw new Error("useChatContext must be used within a ChatProvider");
     }
+
     return context;
 };
-
