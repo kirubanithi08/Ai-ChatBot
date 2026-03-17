@@ -1,81 +1,117 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../auth/AuthContext";
 import { useChatContext } from "../../context/ChatContext";
-import Modal from "../Model";
+import Modal from "../ui/Model";
 import Login from "../../pages/Login";
 
-function History() {
+function History({ mobileOpen, onClose }) {
   const { user } = useAuth();
   const { chats, loadChat, fetchChats } = useChatContext();
-
-  const [authModal, setAuthModal] = useState(null);
+  const [authModal, setAuthModal] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchChats();
-    }
+    if (user) fetchChats();
   }, [user, fetchChats]);
 
-  return (
-    <div className="h-full flex flex-col bg-gray-50/50">
+  const handleLoadChat = (id) => {
+    loadChat(id);
+    onClose?.();
+  };
 
-      <div className="px-5 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-gray-800 uppercase tracking-widest">
-            History
-          </h2>
-          <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {chats.length}
-          </span>
-        </div>
+  const content = (
+    <div className="h-full flex flex-col bg-[#0f0f0f]">
+
+      <div className="px-4 py-4 border-b border-white/5 flex items-center justify-between shrink-0">
+        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">History</h2>
+        <button
+          onClick={onClose}
+          className="md:hidden w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all"
+        >
+          <i className="fa-solid fa-xmark text-sm" />
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
-        {!user ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <div className="w-14 h-14 bg-white shadow-sm rounded-2xl flex items-center justify-center mb-4 text-gray-300">
-              <i className="fa-solid fa-lock text-xl"></i>
+     
+      <div className="relative flex-1 min-h-0">
+        <div
+          className="h-full overflow-y-auto p-3 space-y-0.5"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.06) transparent" }}
+        >
+          {!user ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-6 pt-12">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-4">
+                <i className="fa-solid fa-lock text-gray-600 text-lg" />
+              </div>
+              <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+                Sign in to keep your chat history across devices
+              </p>
+              <button
+                onClick={() => setAuthModal(true)}
+                className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-500 transition-all"
+              >
+                Sign In
+              </button>
             </div>
+          ) : chats.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center p-6 pt-12 opacity-40">
+              <i className="fa-solid fa-clock-rotate-left text-2xl mb-3 text-gray-500" />
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">No history yet</p>
+            </div>
+          ) : (
+            <>
+              {chats.map((chat) => (
+                <button
+                  key={chat.id}
+                  onClick={() => handleLoadChat(chat.id)}
+                  className="w-full text-left px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-white/5 hover:text-gray-200 transition-all flex items-center gap-2.5 group"
+                >
+                  <i className="fa-regular fa-message text-gray-600 group-hover:text-indigo-400 transition-colors shrink-0 text-xs" />
+                  <span className="truncate">{chat.title || "New Chat"}</span>
+                </button>
+              ))}
+             
+              <div className="h-8" />
+            </>
+          )}
+        </div>
 
-            <p className="text-sm text-gray-500 mb-6 font-medium">
-              Sign in to keep your chat history across devices
-            </p>
-
-            <button
-              onClick={() => setAuthModal("login")}
-              className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
-            >
-              Log In
-            </button>
-          </div>
-        ) : chats.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-40">
-            <i className="fa-solid fa-ghost text-3xl mb-3 text-gray-300"></i>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">
-              No history yet
-            </p>
-          </div>
-        ) : (
-          chats.map((chat) => (
-            <button
-              key={chat.id}
-              onClick={() => loadChat(chat.id)}
-              className="w-full text-left px-3 py-2.5 rounded-xl text-sm text-gray-700 bg-white border border-gray-100 shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all flex items-center gap-2 group mb-2"
-            >
-              <i className="fa-regular fa-message text-gray-400 group-hover:text-indigo-500 transition-colors"></i>
-              <span className="truncate font-medium">{chat.title || "New Chat"}</span>
-            </button>
-          ))
+        
+        {user && chats.length > 0 && (
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#0f0f0f] to-transparent" />
         )}
       </div>
 
-
-      <Modal open={!!authModal} onClose={() => setAuthModal(null)}>
-        {authModal === "login" && (
-          <Login onSuccess={() => setAuthModal(null)} />
-        )}
+      <Modal open={authModal} onClose={() => setAuthModal(false)}>
+        <Login onSuccess={() => setAuthModal(false)} />
       </Modal>
     </div>
+  );
+
+  return (
+    <>
+      
+      <div className="hidden md:flex w-56 border-l border-white/5 flex-col">
+        {content}
+      </div>
+
+      
+      <>
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            onClick={onClose}
+          />
+        )}
+        <div className={`
+          fixed top-0 right-0 h-full w-72 z-50
+          md:hidden shadow-2xl
+          transition-transform duration-300 ease-in-out
+          ${mobileOpen ? "translate-x-0" : "translate-x-full"}
+        `}>
+          {content}
+        </div>
+      </>
+    </>
   );
 }
 
