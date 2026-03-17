@@ -7,9 +7,9 @@ import Login from "../../pages/Login";
 import Signup from "../../pages/Signup";
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [authModal, setAuthModal] = useState(null);
+  const [authModal, setAuthModal]   = useState(null);
 
   const { user, logout } = useAuth();
   const { resetChat } = useChatContext();
@@ -17,7 +17,7 @@ export default function Sidebar() {
 
   const baseLink = "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200";
   const inactive = "text-gray-500 hover:bg-white/5 hover:text-gray-200";
-  const active = "bg-white/[0.08] text-white";
+  const active   = "bg-white/[0.08] text-white";
 
   const handleLogout = () => {
     logout();
@@ -47,7 +47,7 @@ export default function Sidebar() {
           </span>
         )}
 
-        
+       
         <button
           onClick={() => setMobileOpen(false)}
           className="md:hidden ml-auto w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all"
@@ -78,6 +78,20 @@ export default function Sidebar() {
       </nav>
 
       
+      {!collapsed && (
+        <div className="px-3 pb-3">
+          <div className="rounded-xl bg-indigo-600/10 border border-indigo-500/20 px-3 py-3">
+            <div className="flex items-start gap-2.5">
+              <i className="fa-solid fa-circle-info text-indigo-400 text-xs mt-0.5 shrink-0" />
+              <p className="text-xs text-indigo-300/80 leading-relaxed">
+                First response may be slow — the server needs a moment to wake up on Render's free tier.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+     
       <div className="px-3 py-4 border-t border-white/5 space-y-1">
         {user ? (
           <>
@@ -126,7 +140,6 @@ export default function Sidebar() {
         >
           <i className="fa-solid fa-bars text-sm" />
         </button>
-        
         <div id="mobile-topbar-right" />
       </div>
 
@@ -161,7 +174,7 @@ export default function Sidebar() {
 
       
       <Modal open={!!authModal} onClose={() => setAuthModal(null)}>
-        {authModal === "login" && <Login onSuccess={() => setAuthModal(null)} />}
+        {authModal === "login"  && <Login  onSuccess={() => setAuthModal(null)} />}
         {authModal === "signup" && <Signup onSuccess={() => setAuthModal(null)} />}
       </Modal>
     </>

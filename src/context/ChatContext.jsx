@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useRef } from "react";
 import { getUserChats, getUserChatsById } from "../api/chatApi";
 import { BASE_URL } from "../api/axios";
+import { useAuth } from "../auth/AuthContext";
 
 const ChatContext = createContext();
 
@@ -13,8 +14,9 @@ export function ChatProvider({ children }) {
 
   const abortRef = useRef(null);
 
-  
+  const { user } = useAuth();
 
+ 
   const fetchChats = useCallback(async () => {
     try {
       const data = await getUserChats();
@@ -46,8 +48,7 @@ export function ChatProvider({ children }) {
     }
   }, []);
 
-  
-
+ 
   const sendMessage = useCallback(async (text) => {
     if (!text.trim() || streaming) return;
 
@@ -98,22 +99,18 @@ export function ChatProvider({ children }) {
         buffer += decoder.decode(value, { stream: true });
         const events = buffer.split("\n\n");
 
-        
         buffer = events.pop() ?? "";
 
         for (const event of events) {
           if (!event.trim()) continue;
 
-          
           let eventName = "message";
           let eventData = "";
 
           for (const line of event.split("\n")) {
             if (line.startsWith("event:")) {
-              
               eventName = line.slice(6).trim();
             } else if (line.startsWith("data:")) {
-             
               eventData += line.slice(5).trimStart();
             }
           }
@@ -121,11 +118,9 @@ export function ChatProvider({ children }) {
           if (!eventData) continue;
 
           if (eventName === "session") {
-            
             setSessionId(Number(eventData));
 
           } else if (eventName === "message") {
-            
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === aiId
@@ -135,7 +130,6 @@ export function ChatProvider({ children }) {
             );
 
           } else if (eventName === "error") {
-            
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === aiId
@@ -146,7 +140,7 @@ export function ChatProvider({ children }) {
 
           } else if (eventName === "done") {
             
-            fetchChats();
+            if (user) fetchChats();
           }
         }
       }
@@ -166,9 +160,8 @@ export function ChatProvider({ children }) {
       setLoading(false);
       abortRef.current = null;
     }
-  }, [sessionId, streaming, fetchChats]);
+  }, [sessionId, streaming, fetchChats, user]);
 
-  
 
   const stopStream = useCallback(() => {
     abortRef.current?.abort();
