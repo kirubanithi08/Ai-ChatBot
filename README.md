@@ -118,7 +118,7 @@ cp .env.example .env
 Create a `.env` file in the root:
 
 ```env
-VITE_API_BASE_URL=https://your-backend-url.com
+VITE_API_BASE_URL=https://ai-chat-aqd9.onrender.com
 ```
 
 > The base URL is also configurable in `src/api/axios.js` via the `BASE_URL` constant.
