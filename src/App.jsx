@@ -1,34 +1,33 @@
 import { Route, Routes } from "react-router-dom";
-import "./App.css";
+import { AuthProvider } from "./auth/AuthContext";
+import { ChatProvider } from "./context/ChatContext";
 import Sidebar from "./components/layout/Sidebar";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import FAQ from "./pages/Faq";
-import { ChatProvider } from "./context/ChatContext";
+import "./App.css";
 
 function App() {
   return (
-    <ChatProvider>
-      <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <AuthProvider>
+      <ChatProvider>
+        
+        <div className="flex flex-col md:flex-row h-screen bg-[#0a0a0a] overflow-hidden">
 
-        <Sidebar />
+          <Sidebar />
 
-        <main className="flex-1 p-3 overflow-hidden bg-[#0f0f11]">
-
-          <div className="h-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-
+         
+          <main className="flex-1 overflow-hidden flex flex-col min-w-0 bg-[#111111]">
             <Routes>
-              <Route path="/" element={<Chat />} />
+              <Route path="/"         element={<Chat />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/faq" element={<FAQ />} />
+              <Route path="/faq"      element={<FAQ />} />
             </Routes>
+          </main>
 
-          </div>
-
-        </main>
-
-      </div>
-    </ChatProvider>
+        </div>
+      </ChatProvider>
+    </AuthProvider>
   );
 }
 
