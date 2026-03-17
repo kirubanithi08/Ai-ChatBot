@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useChat } from "../hooks/useChat";
 import Chatbar from "../components/chat/Chatbar";
 import Chats from "../components/chat/Chats";
@@ -14,7 +15,7 @@ function Chat() {
      
       <div className="flex flex-col flex-1 min-w-0">
 
-       
+        
         <div className="hidden md:flex px-4 py-3 border-b border-white/5 bg-[#111111] items-center shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-indigo-600/20 flex items-center justify-center">
@@ -29,18 +30,16 @@ function Chat() {
           </div>
         </div>
 
-        
+       
         <MobileHistoryPortal onOpen={() => setHistoryOpen(true)} />
 
         
-        <div className="flex-1 overflow-y-auto scroll-smooth"
-          style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent" }}
-        >
+        <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto h-full px-4">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mb-5">
-                  <i className="fa-solid fa-robot text-gray-500 text-xl" />
+                <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mb-5 animate-robot-bounce">
+                  <i className="fa-solid fa-robot text-gray-400 text-xl" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-200 mb-2">
                   How can I help you today?
@@ -55,7 +54,7 @@ function Chat() {
           </div>
         </div>
 
-        
+       
         <div className="px-4 pb-4 pt-2 shrink-0">
           <div className="max-w-2xl mx-auto">
             <Chatbar
@@ -73,9 +72,6 @@ function Chat() {
     </div>
   );
 }
-
-
-import { createPortal } from "react-dom";
 
 function MobileHistoryPortal({ onOpen }) {
   const target = document.getElementById("mobile-topbar-right");
