@@ -1,150 +1,207 @@
-import { createContext, useContext, useState, useCallback } from "react";
-import api from "../api/axios";
+import { createContext, useContext, useState, useCallback, useRef } from "react";
 import { getUserChats, getUserChatsById } from "../api/chatApi";
+import { BASE_URL } from "../api/axios";
 
 const ChatContext = createContext();
 
 export function ChatProvider({ children }) {
-    const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [sessionId, setSessionId] = useState(null);
-    const [chats, setChats] = useState([]);
+  const [messages, setMessages]   = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [streaming, setStreaming] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const [chats, setChats]         = useState([]);
 
-    
+  const abortRef = useRef(null);
 
-    const fetchChats = useCallback(async () => {
-        try {
-            const data = await getUserChats();
-            setChats(data);
-        } catch (err) {
-            console.error("Failed to fetch chats:", err);
-        }
-    }, []);
+  
 
-   
+  const fetchChats = useCallback(async () => {
+    try {
+      const data = await getUserChats();
+      setChats(data);
+    } catch (err) {
+      console.error("Failed to fetch chats:", err);
+    }
+  }, []);
 
-    const sendMessage = async (text) => {
-        if (!text.trim()) return;
+  const loadChat = useCallback(async (id) => {
+    try {
+      setLoading(true);
+      setSessionId(id);
+      const history = await getUserChatsById(id);
+      setMessages(
+        history.map((msg) => ({
+          id:        msg.id ?? crypto.randomUUID(),
+          sender:    msg.sender ?? (msg.role === "user" ? "USER" : "AI"),
+          content:   typeof (msg.message ?? msg.content) === "string"
+                       ? (msg.message ?? msg.content)
+                       : JSON.stringify(msg.message ?? msg.content, null, 2),
+          createdAt: msg.createdAt ?? new Date().toISOString(),
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to load chat history:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-        const userMsg = {
-            id: crypto.randomUUID(),
-            sender: "USER",
-            content: text,
-            createdAt: new Date().toISOString(),
-        };
+  
 
-        setMessages((prev) => [...prev, userMsg]);
-        setLoading(true);
+  const sendMessage = useCallback(async (text) => {
+    if (!text.trim() || streaming) return;
 
-        try {
-            const isNewSession = !sessionId;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        sender: "USER",
+        content: text,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
 
-            const res = await api.post("/chat", {
-                message: text,
-                sessionId,
-            });
+    const aiId = crypto.randomUUID();
+    setMessages((prev) => [
+      ...prev,
+      { id: aiId, sender: "AI", content: "", createdAt: new Date().toISOString() },
+    ]);
 
-            const data = res.data;
+    setStreaming(true);
+    setLoading(true);
 
-            if (data.sessionId) {
-                setSessionId(data.sessionId);
+    abortRef.current = new AbortController();
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/chat/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "text/event-stream",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ message: text, sessionId }),
+        signal: abortRef.current.signal,
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");
+
+        
+        buffer = events.pop() ?? "";
+
+        for (const event of events) {
+          if (!event.trim()) continue;
+
+          
+          let eventName = "message";
+          let eventData = "";
+
+          for (const line of event.split("\n")) {
+            if (line.startsWith("event:")) {
+              
+              eventName = line.slice(6).trim();
+            } else if (line.startsWith("data:")) {
+             
+              eventData += line.slice(5).trimStart();
             }
+          }
 
-            const aiMsg = {
-                id: crypto.randomUUID(),
-                sender: "AI",
-                content:
-                    typeof data.aiResponse === "string"
-                        ? data.aiResponse
-                        : JSON.stringify(data.aiResponse, null, 2),
-                createdAt: new Date().toISOString(),
-            };
+          if (!eventData) continue;
 
-            setMessages((prev) => [...prev, aiMsg]);
+          if (eventName === "session") {
+            
+            setSessionId(Number(eventData));
 
-            if (isNewSession) {
-                fetchChats();
-            }
+          } else if (eventName === "message") {
+            
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiId
+                  ? { ...m, content: m.content + eventData }
+                  : m
+              )
+            );
 
-        } catch (error) {
-            console.error("Chat Error:", error);
+          } else if (eventName === "error") {
+            
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiId
+                  ? { ...m, content: `⚠️ ${eventData}` }
+                  : m
+              )
+            );
 
-            setMessages((prev) => [
-                ...prev,
-                {
-                    id: crypto.randomUUID(),
-                    sender: "AI",
-                    content: "⚠️ Failed to get response. Please try again.",
-                    createdAt: new Date().toISOString(),
-                },
-            ]);
-
-        } finally {
-            setLoading(false);
+          } else if (eventName === "done") {
+            
+            fetchChats();
+          }
         }
-    };
+      }
 
-    
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("Stream error:", err);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiId
+            ? { ...m, content: "⚠️ Failed to get a response. Please try again." }
+            : m
+        )
+      );
+    } finally {
+      setStreaming(false);
+      setLoading(false);
+      abortRef.current = null;
+    }
+  }, [sessionId, streaming, fetchChats]);
 
-    const resetChat = () => {
-        setMessages([]);
-        setSessionId(null);
-    };
+  
 
-    
+  const stopStream = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
 
-    const loadChat = useCallback(async (id) => {
-        try {
-            setLoading(true);
-            setSessionId(id);
+  const resetChat = useCallback(() => {
+    abortRef.current?.abort();
+    setMessages([]);
+    setSessionId(null);
+  }, []);
 
-            const history = await getUserChatsById(id);
-
-            const mappedMessages = history.map((msg) => ({
-                id: msg.id || crypto.randomUUID(),
-                sender: msg.sender || (msg.role === "user" ? "USER" : "AI"),
-                content:
-                    typeof (msg.message || msg.content) === "string"
-                        ? (msg.message || msg.content)
-                        : JSON.stringify(msg.message || msg.content, null, 2),
-                createdAt: msg.createdAt || new Date().toISOString(),
-            }));
-
-            setMessages(mappedMessages);
-
-        } catch (error) {
-            console.error("Failed to load chat history:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    return (
-        <ChatContext.Provider
-            value={{
-                messages,
-                loading,
-                sessionId,
-                chats,
-                fetchChats,
-                sendMessage,
-                resetChat,
-                loadChat,
-            }}
-        >
-            {children}
-        </ChatContext.Provider>
-    );
+  return (
+    <ChatContext.Provider
+      value={{
+        messages,
+        loading,
+        streaming,
+        sessionId,
+        chats,
+        fetchChats,
+        sendMessage,
+        stopStream,
+        resetChat,
+        loadChat,
+      }}
+    >
+      {children}
+    </ChatContext.Provider>
+  );
 }
 
-
-
 export const useChatContext = () => {
-    const context = useContext(ChatContext);
-
-    if (!context) {
-        throw new Error("useChatContext must be used within a ChatProvider");
-    }
-
-    return context;
+  const ctx = useContext(ChatContext);
+  if (!ctx) throw new Error("useChatContext must be used within a ChatProvider");
+  return ctx;
 };
